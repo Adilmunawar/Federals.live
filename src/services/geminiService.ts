@@ -28,11 +28,8 @@ class GeminiService {
       
       let jsonString = jsonMatch[0];
       
-      // Clean up common JSON formatting issues
-      jsonString = jsonString
-        .replace(/,(\s*[}\]])/g, '$1') // Remove trailing commas
-        .replace(/([{,]\s*)(\w+):/g, '$1"$2":') // Quote unquoted keys
-        .replace(/:\s*([^",{\[\]}\s][^",{\[\]}\n]*?)(\s*[,}\]])/g, ':"$1"$2'); // Quote unquoted string values
+      // Only remove trailing commas - avoid aggressive regex replacements
+      jsonString = jsonString.replace(/,(\s*[}\]])/g, '$1');
       
       return JSON.parse(jsonString);
     } catch (parseError) {
