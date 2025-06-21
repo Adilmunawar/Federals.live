@@ -193,18 +193,23 @@ Focus on current political developments, institutional processes, and policy imp
 
   async generateImageSuggestions(topic: string, category: string): Promise<string[]> {
     const prompt = `
-Suggest 5 professional stock photo search queries for a political news article about: "${topic}"
+Generate 5 specific image search queries for a news article about: "${topic}"
 Category: ${category}
 
-Return as JSON array of search terms that would find appropriate, professional images:
+Return ONLY a JSON array of search terms that would find relevant, professional images:
 ["search query 1", "search query 2", "search query 3", "search query 4", "search query 5"]
 
-Focus on:
-- Professional political imagery
-- Government buildings and institutions
-- Official meetings and ceremonies
-- Abstract concepts related to politics
+Guidelines:
+- Make queries specific to the topic, not generic
+- Focus on visual elements that relate to the story
+- Include relevant locations, people, or events
 - Avoid partisan imagery
+- Use professional news photography terms
+
+Example for "Iran-Israel conflict":
+["middle east conflict", "iran israel war", "international diplomacy", "military conflict", "geopolitical tensions"]
+
+For topic "${topic}":
 `;
 
     try {
@@ -212,22 +217,52 @@ Focus on:
       const response = await result.response;
       const text = response.text();
       
-      const jsonMatch = text.match(/\[[\s\S]*\]/);
+      const jsonMatch = text.match(/\[[\s\S]*?\]/);
       if (!jsonMatch) {
-        throw new Error('Invalid response format from AI');
+        // Fallback to topic-based queries if AI fails
+        return this.generateFallbackQueries(topic, category);
       }
       
-      return JSON.parse(jsonMatch[0]);
+      const queries = JSON.parse(jsonMatch[0]);
+      return Array.isArray(queries) ? queries : this.generateFallbackQueries(topic, category);
     } catch (error) {
       console.error('Error generating image suggestions:', error);
-      return [
-        'government building politics',
-        'political meeting conference',
-        'capitol building washington',
-        'political debate discussion',
-        'federal government official'
-      ];
+      return this.generateFallbackQueries(topic, category);
     }
+  }
+
+  private generateFallbackQueries(topic: string, category: string): string[] {
+    const topicLower = topic.toLowerCase();
+    
+    // Generate topic-specific queries based on keywords
+    const queries: string[] = [];
+    
+    if (topicLower.includes('iran') || topicLower.includes('israel')) {
+      queries.push('middle east conflict', 'iran israel war', 'international diplomacy', 'military conflict', 'geopolitical tensions');
+    } else if (topicLower.includes('congress') || topicLower.includes('senate')) {
+      queries.push('government building', 'political meeting', 'federal government', 'congressional session', 'political debate');
+    } else if (topicLower.includes('economy') || topicLower.includes('financial')) {
+      queries.push('economic policy', 'financial markets', 'government building', 'political meeting', 'federal reserve');
+    } else if (topicLower.includes('security') || topicLower.includes('defense')) {
+      queries.push('military conflict', 'government building', 'political meeting', 'federal government', 'national security');
+    } else {
+      // Default based on category
+      switch (category.toLowerCase()) {
+        case 'world':
+          queries.push('international diplomacy', 'geopolitical tensions', 'world leaders', 'global politics', 'international relations');
+          break;
+        case 'economy':
+          queries.push('economic policy', 'financial markets', 'government building', 'political meeting', 'federal reserve');
+          break;
+        case 'security':
+          queries.push('military conflict', 'national security', 'government building', 'political meeting', 'defense policy');
+          break;
+        default:
+          queries.push('government building', 'political meeting', 'federal government', 'political debate', 'congressional session');
+      }
+    }
+    
+    return queries.slice(0, 5);
   }
 }
 

@@ -31,6 +31,7 @@ const AIContentGenerator: React.FC<AIContentGeneratorProps> = ({ onContentGenera
   const [research, setResearch] = useState<any>(null);
   const [generatedContent, setGeneratedContent] = useState<any>(null);
   const [selectedImage, setSelectedImage] = useState('');
+  const [topicImages, setTopicImages] = useState<string[]>([]);
 
   const categories = ['Politics', 'World', 'Opinion', 'Economy', 'Culture', 'Science', 'Security'];
   const tones = [
@@ -83,9 +84,11 @@ const AIContentGenerator: React.FC<AIContentGeneratorProps> = ({ onContentGenera
       const keywords = formData.keywords.split(',').map(k => k.trim()).filter(k => k);
       const content = await geminiService.generateArticle(formData.topic, formData.category, keywords);
       
-      // Get images for the category
-      const categoryImages = ImageService.getAllImagesForCategory(formData.category);
-      setSelectedImage(categoryImages[0]);
+      // Generate topic-specific images using AI
+      const imageQueries = await geminiService.generateImageSuggestions(formData.topic, formData.category);
+      const relevantImages = ImageService.getImagesForQueries(imageQueries);
+      setTopicImages(relevantImages);
+      setSelectedImage(relevantImages[0] || ImageService.getRandomImageForCategory(formData.category));
       
       setGeneratedContent(content);
       setStep(3);
@@ -153,7 +156,7 @@ const AIContentGenerator: React.FC<AIContentGeneratorProps> = ({ onContentGenera
           value={formData.topic}
           onChange={(e) => setFormData({...formData, topic: e.target.value})}
           className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 focus:outline-none focus:border-red-600"
-          placeholder="e.g., Federal Reserve interest rate decision, Congressional budget negotiations"
+          placeholder="e.g., Iran-Israel conflict latest developments, Federal Reserve interest rate decision"
         />
       </div>
 
@@ -205,7 +208,7 @@ const AIContentGenerator: React.FC<AIContentGeneratorProps> = ({ onContentGenera
           value={formData.keywords}
           onChange={(e) => setFormData({...formData, keywords: e.target.value})}
           className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 focus:outline-none focus:border-red-600"
-          placeholder="federal reserve, interest rates, monetary policy"
+          placeholder="iran israel, middle east conflict, international relations"
         />
         <p className="text-xs text-gray-400 mt-1">Separate keywords with commas</p>
       </div>
@@ -329,9 +332,13 @@ const AIContentGenerator: React.FC<AIContentGeneratorProps> = ({ onContentGenera
           </div>
 
           <div className="bg-gray-700 rounded-lg p-4">
-            <h3 className="font-semibold text-white mb-3">Select Featured Image</h3>
+            <h3 className="font-semibold text-white mb-3 flex items-center space-x-2">
+              <Image className="w-4 h-4" />
+              <span>Select Featured Image</span>
+              <span className="text-xs bg-blue-600 px-2 py-1 rounded">AI-Curated for "{formData.topic}"</span>
+            </h3>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              {ImageService.getAllImagesForCategory(formData.category).map((imageUrl, index) => (
+              {topicImages.map((imageUrl, index) => (
                 <div
                   key={index}
                   className={`cursor-pointer rounded-lg overflow-hidden border-2 transition-colors ${
@@ -341,12 +348,15 @@ const AIContentGenerator: React.FC<AIContentGeneratorProps> = ({ onContentGenera
                 >
                   <img
                     src={imageUrl}
-                    alt={`Option ${index + 1}`}
+                    alt={`AI-suggested image ${index + 1} for ${formData.topic}`}
                     className="w-full h-24 object-cover"
                   />
                 </div>
               ))}
             </div>
+            <p className="text-xs text-gray-400 mt-2">
+              Images are AI-curated based on your topic: "{formData.topic}"
+            </p>
           </div>
 
           <div className="bg-gray-700 rounded-lg p-4">
