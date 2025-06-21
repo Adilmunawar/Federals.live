@@ -11,6 +11,38 @@ class GeminiService {
     this.model = this.genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
   }
 
+  private parseAIResponse(text: string): any {
+    try {
+      // Remove markdown code block fences if present
+      let cleanText = text.trim();
+      cleanText = cleanText.replace(/^```json\s*/i, '');
+      cleanText = cleanText.replace(/^```\s*/i, '');
+      cleanText = cleanText.replace(/\s*```$/i, '');
+      
+      // Extract JSON from the response
+      const jsonMatch = cleanText.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) {
+        console.error('No JSON found in response:', cleanText);
+        throw new Error('No valid JSON found in AI response');
+      }
+      
+      let jsonString = jsonMatch[0];
+      
+      // Clean up common JSON formatting issues
+      jsonString = jsonString
+        .replace(/,(\s*[}\]])/g, '$1') // Remove trailing commas
+        .replace(/([{,]\s*)(\w+):/g, '$1"$2":') // Quote unquoted keys
+        .replace(/:\s*([^",{\[\]}\s][^",{\[\]}\n]*?)(\s*[,}\]])/g, ':"$1"$2'); // Quote unquoted string values
+      
+      return JSON.parse(jsonString);
+    } catch (parseError) {
+      console.error('JSON parsing failed:', parseError);
+      console.error('Original text:', text);
+      console.error('Attempted JSON:', text.match(/\{[\s\S]*\}/)?.[0]);
+      throw new Error('Failed to parse AI response as JSON');
+    }
+  }
+
   async generateArticle(topic: string, category: string, keywords: string[]): Promise<{
     title: string;
     summary: string;
@@ -33,6 +65,8 @@ Requirements:
 2. AUTHORITATIVENESS: Use credible sources, official statements, and expert analysis
 3. TRUSTWORTHINESS: Present balanced, fact-based reporting with proper attribution
 4. SEO OPTIMIZATION: Include target keywords naturally throughout
+
+IMPORTANT: Respond with ONLY valid JSON, no markdown formatting or extra text.
 
 Structure your response as JSON with these fields:
 {
@@ -65,13 +99,7 @@ Focus on current political developments, policy implications, and institutional 
       const response = await result.response;
       const text = response.text();
       
-      // Extract JSON from the response
-      const jsonMatch = text.match(/\{[\s\S]*\}/);
-      if (!jsonMatch) {
-        throw new Error('Invalid response format from AI');
-      }
-      
-      return JSON.parse(jsonMatch[0]);
+      return this.parseAIResponse(text);
     } catch (error) {
       console.error('Error generating article:', error);
       throw new Error('Failed to generate article content');
@@ -92,6 +120,8 @@ Analyze this article for SEO optimization:
 Title: ${title}
 Category: ${category}
 Content: ${content.substring(0, 2000)}...
+
+IMPORTANT: Respond with ONLY valid JSON, no markdown formatting or extra text.
 
 Provide SEO analysis and recommendations as JSON:
 {
@@ -120,12 +150,7 @@ Focus on:
       const response = await result.response;
       const text = response.text();
       
-      const jsonMatch = text.match(/\{[\s\S]*\}/);
-      if (!jsonMatch) {
-        throw new Error('Invalid response format from AI');
-      }
-      
-      return JSON.parse(jsonMatch[0]);
+      return this.parseAIResponse(text);
     } catch (error) {
       console.error('Error optimizing SEO:', error);
       throw new Error('Failed to optimize SEO');
@@ -141,6 +166,8 @@ Focus on:
   }> {
     const prompt = `
 Research the political topic: "${topic}"
+
+IMPORTANT: Respond with ONLY valid JSON, no markdown formatting or extra text.
 
 Provide comprehensive research data as JSON:
 {
@@ -179,12 +206,7 @@ Focus on current political developments, institutional processes, and policy imp
       const response = await result.response;
       const text = response.text();
       
-      const jsonMatch = text.match(/\{[\s\S]*\}/);
-      if (!jsonMatch) {
-        throw new Error('Invalid response format from AI');
-      }
-      
-      return JSON.parse(jsonMatch[0]);
+      return this.parseAIResponse(text);
     } catch (error) {
       console.error('Error researching topic:', error);
       throw new Error('Failed to research topic');
@@ -195,6 +217,8 @@ Focus on current political developments, institutional processes, and policy imp
     const prompt = `
 Generate 5 specific image search queries for a news article about: "${topic}"
 Category: ${category}
+
+IMPORTANT: Respond with ONLY a valid JSON array, no markdown formatting or extra text.
 
 Return ONLY a JSON array of search terms that would find relevant, professional images:
 ["search query 1", "search query 2", "search query 3", "search query 4", "search query 5"]
@@ -217,14 +241,30 @@ For topic "${topic}":
       const response = await result.response;
       const text = response.text();
       
-      const jsonMatch = text.match(/\[[\s\S]*?\]/);
+      // Clean up the response for array parsing
+      let cleanText = text.trim();
+      cleanText = cleanText.replace(/^```json\s*/i, '');
+      cleanText = cleanText.replace(/^```\s*/i, '');
+      cleanText = cleanText.replace(/\s*```$/i, '');
+      
+      const jsonMatch = cleanText.match(/\[[\s\S]*?\]/);
       if (!jsonMatch) {
-        // Fallback to topic-based queries if AI fails
+        console.error('No JSON array found in response:', cleanText);
         return this.generateFallbackQueries(topic, category);
       }
       
-      const queries = JSON.parse(jsonMatch[0]);
-      return Array.isArray(queries) ? queries : this.generateFallbackQueries(topic, category);
+      try {
+        let jsonString = jsonMatch[0];
+        // Clean up common array formatting issues
+        jsonString = jsonString.replace(/,(\s*\])/g, '$1'); // Remove trailing commas
+        
+        const queries = JSON.parse(jsonString);
+        return Array.isArray(queries) ? queries : this.generateFallbackQueries(topic, category);
+      } catch (parseError) {
+        console.error('Failed to parse image suggestions JSON:', parseError);
+        console.error('Attempted JSON:', jsonMatch[0]);
+        return this.generateFallbackQueries(topic, category);
+      }
     } catch (error) {
       console.error('Error generating image suggestions:', error);
       return this.generateFallbackQueries(topic, category);
