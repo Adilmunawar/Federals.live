@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, Clock, User } from 'lucide-react';
-import { ArticleManager } from '../utils/articleManager';
+import { useArticles } from '../hooks/useArticles';
 
 const HeroSection = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
-  const featuredArticles = ArticleManager.getFeaturedArticles().slice(0, 3);
+  const { getFeaturedArticles } = useArticles();
+  const featuredArticles = getFeaturedArticles().slice(0, 3);
 
   useEffect(() => {
     if (featuredArticles.length > 1) {
@@ -25,7 +26,24 @@ const HeroSection = () => {
   };
 
   if (featuredArticles.length === 0) {
-    return null;
+    return (
+      <section className="relative h-[70vh] overflow-hidden bg-gray-800 flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-4xl lg:text-6xl font-bold text-white mb-6">
+            Welcome to Federals<span className="text-red-600">.live</span>
+          </h1>
+          <p className="text-xl text-gray-300 mb-8">
+            Your authoritative source for breaking news and political analysis
+          </p>
+          <Link
+            to="/admin"
+            className="bg-red-600 hover:bg-red-700 text-white px-8 py-3 rounded-lg font-semibold transition-colors"
+          >
+            Create Your First Article
+          </Link>
+        </div>
+      </section>
+    );
   }
 
   const currentArticle = featuredArticles[currentSlide];

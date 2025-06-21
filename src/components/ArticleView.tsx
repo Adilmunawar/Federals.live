@@ -1,13 +1,40 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArticleManager } from '../utils/articleManager';
+import { useArticles } from '../hooks/useArticles';
 import { Clock, User, Calendar, ArrowLeft, Share2, Twitter, Facebook, Linkedin } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { Article } from '../types/Article';
 
 const ArticleView = () => {
   const { slug } = useParams<{ slug: string }>();
-  const article = slug ? ArticleManager.getArticleBySlug(slug) : null;
+  const { getArticleBySlug } = useArticles();
+  const [article, setArticle] = useState<Article | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchArticle = async () => {
+      if (slug) {
+        setLoading(true);
+        const fetchedArticle = await getArticleBySlug(slug);
+        setArticle(fetchedArticle);
+        setLoading(false);
+      }
+    };
+
+    fetchArticle();
+  }, [slug, getArticleBySlug]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto mb-4"></div>
+          <p className="text-gray-400">Loading article...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!article) {
     return (

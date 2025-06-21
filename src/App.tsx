@@ -8,6 +8,7 @@ import Footer from './components/Footer';
 import BreakingTicker from './components/BreakingTicker';
 import AdminPanel from './components/AdminPanel';
 import ArticleView from './components/ArticleView';
+import AuthGuard from './components/AuthGuard';
 
 function HomePage() {
   return (
@@ -28,8 +29,12 @@ function App() {
     <Router>
       <div className="min-h-screen bg-gray-900 text-white">
         <Routes>
-          {/* Admin Panel Route */}
-          <Route path="/admin" element={<AdminPanel />} />
+          {/* Admin Panel Route - Protected */}
+          <Route path="/admin" element={
+            <AuthGuard>
+              <AdminPanel />
+            </AuthGuard>
+          } />
           
           {/* Article View Route */}
           <Route path="/article/:slug" element={
