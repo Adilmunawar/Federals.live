@@ -11,13 +11,34 @@ const ArticleView = () => {
   const { getArticleBySlug } = useArticles();
   const [article, setArticle] = useState<Article | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchArticle = async () => {
-      if (slug) {
+      if (!slug) {
+        setError('No article slug provided');
+        setLoading(false);
+        return;
+      }
+
+      try {
         setLoading(true);
+        setError(null);
+        console.log('Fetching article with slug:', slug);
+        
         const fetchedArticle = await getArticleBySlug(slug);
-        setArticle(fetchedArticle);
+        
+        if (fetchedArticle) {
+          setArticle(fetchedArticle);
+          console.log('Article loaded successfully:', fetchedArticle);
+        } else {
+          setError('Article not found');
+          console.log('Article not found for slug:', slug);
+        }
+      } catch (err) {
+        console.error('Error loading article:', err);
+        setError('Failed to load article');
+      } finally {
         setLoading(false);
       }
     };
@@ -36,12 +57,14 @@ const ArticleView = () => {
     );
   }
 
-  if (!article) {
+  if (error || !article) {
     return (
       <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-4xl font-bold mb-4">Article Not Found</h1>
-          <p className="text-gray-400 mb-8">The article you're looking for doesn't exist.</p>
+          <p className="text-gray-400 mb-8">
+            {error || "The article you're looking for doesn't exist."}
+          </p>
           <Link
             to="/"
             className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors"
@@ -53,7 +76,7 @@ const ArticleView = () => {
     );
   }
 
-  const shareUrl = window.location.href;
+  const shareUrl = typeof window !== 'undefined' ? window.location.href : '';
   const shareText = `${article.title} - ${article.summary}`;
 
   const handleShare = (platform: string) => {
@@ -69,7 +92,9 @@ const ArticleView = () => {
         url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;
         break;
     }
-    window.open(url, '_blank', 'width=600,height=400');
+    if (url && typeof window !== 'undefined') {
+      window.open(url, '_blank', 'width=600,height=400');
+    }
   };
 
   return (
@@ -122,9 +147,11 @@ const ArticleView = () => {
             {article.title}
           </h1>
 
-          <p className="text-xl text-gray-300 mb-6 leading-relaxed">
-            {article.summary}
-          </p>
+          {article.summary && (
+            <p className="text-xl text-gray-300 mb-6 leading-relaxed">
+              {article.summary}
+            </p>
+          )}
 
           <div className="flex flex-wrap items-center justify-between gap-4 text-gray-400 text-sm">
             <div className="flex items-center space-x-6">
@@ -174,6 +201,9 @@ const ArticleView = () => {
               src={article.image}
               alt={article.title}
               className="w-full h-64 lg:h-96 object-cover rounded-lg"
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+              }}
             />
           </div>
         )}

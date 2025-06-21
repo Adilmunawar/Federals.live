@@ -1,5 +1,6 @@
 import React from 'react';
 import { Mail, Twitter, Facebook, Linkedin, Rss } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -12,10 +13,10 @@ const Footer = () => {
       { name: 'Contact Us', href: '#' }
     ],
     Categories: [
-      { name: 'Politics', href: '#' },
-      { name: 'World News', href: '#' },
-      { name: 'Economy', href: '#' },
-      { name: 'Opinion', href: '#' }
+      { name: 'Politics', href: '/category/politics' },
+      { name: 'World News', href: '/category/world' },
+      { name: 'Economy', href: '/category/economy' },
+      { name: 'Opinion', href: '/category/opinion' }
     ],
     Legal: [
       { name: 'Privacy Policy', href: '#' },
@@ -38,14 +39,24 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 mb-8">
           {/* Brand Section */}
           <div className="lg:col-span-2">
-            <div className="flex items-center space-x-3 mb-4">
-              <div className="w-8 h-8 bg-red-600 rounded flex items-center justify-center">
+            <Link to="/" className="flex items-center space-x-3 mb-4">
+              <img 
+                src="/Federals logo.png" 
+                alt="Federals.live Logo" 
+                className="w-8 h-8 object-contain"
+                onError={(e) => {
+                  // Fallback to original design if logo fails to load
+                  e.currentTarget.style.display = 'none';
+                  e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                }}
+              />
+              <div className="w-8 h-8 bg-red-600 rounded flex items-center justify-center hidden">
                 <div className="w-4 h-4 bg-white rounded-full"></div>
               </div>
               <h3 className="text-2xl font-bold text-white">
                 Federals<span className="text-red-600">.live</span>
               </h3>
-            </div>
+            </Link>
             <p className="text-gray-400 mb-6 leading-relaxed">
               Your authoritative source for breaking news, political analysis, world affairs, 
               and global intelligence. Delivering fact-based journalism and insightful commentary 
@@ -79,12 +90,21 @@ const Footer = () => {
               <ul className="space-y-2">
                 {links.map((link) => (
                   <li key={link.name}>
-                    <a
-                      href={link.href}
-                      className="text-gray-400 hover:text-red-400 transition-colors text-sm"
-                    >
-                      {link.name}
-                    </a>
+                    {link.href.startsWith('/') ? (
+                      <Link
+                        to={link.href}
+                        className="text-gray-400 hover:text-red-400 transition-colors text-sm"
+                      >
+                        {link.name}
+                      </Link>
+                    ) : (
+                      <a
+                        href={link.href}
+                        className="text-gray-400 hover:text-red-400 transition-colors text-sm"
+                      >
+                        {link.name}
+                      </a>
+                    )}
                   </li>
                 ))}
               </ul>

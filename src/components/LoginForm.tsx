@@ -39,7 +39,17 @@ const LoginForm = () => {
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
           <div className="flex items-center justify-center space-x-3 mb-4">
-            <div className="w-10 h-10 bg-red-600 rounded flex items-center justify-center">
+            <img 
+              src="/Federals logo.png" 
+              alt="Federals.live Logo" 
+              className="w-10 h-10 object-contain"
+              onError={(e) => {
+                // Fallback to original design if logo fails to load
+                e.currentTarget.style.display = 'none';
+                e.currentTarget.nextElementSibling?.classList.remove('hidden');
+              }}
+            />
+            <div className="w-10 h-10 bg-red-600 rounded flex items-center justify-center hidden">
               <div className="w-5 h-5 bg-white rounded-full"></div>
             </div>
             <h1 className="text-3xl font-bold">

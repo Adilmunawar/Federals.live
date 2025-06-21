@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Menu, X } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -25,25 +26,35 @@ const Header = () => {
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-red-600 rounded flex items-center justify-center">
+          <Link to="/" className="flex items-center space-x-3">
+            <img 
+              src="/Federals logo.png" 
+              alt="Federals.live Logo" 
+              className="w-8 h-8 object-contain"
+              onError={(e) => {
+                // Fallback to original design if logo fails to load
+                e.currentTarget.style.display = 'none';
+                e.currentTarget.nextElementSibling?.classList.remove('hidden');
+              }}
+            />
+            <div className="w-8 h-8 bg-red-600 rounded flex items-center justify-center hidden">
               <div className="w-4 h-4 bg-white rounded-full"></div>
             </div>
             <h1 className="text-2xl font-bold text-white">
               Federals<span className="text-red-600">.live</span>
             </h1>
-          </div>
+          </Link>
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
             {categories.map((category) => (
-              <a
+              <Link
                 key={category}
-                href={`#${category.toLowerCase()}`}
+                to={`/category/${category.toLowerCase()}`}
                 className="text-gray-300 hover:text-red-600 transition-colors font-medium"
               >
                 {category}
-              </a>
+              </Link>
             ))}
           </nav>
 
@@ -75,14 +86,14 @@ const Header = () => {
           <div className="md:hidden bg-gray-900 border-t border-gray-800">
             <div className="py-4 space-y-4">
               {categories.map((category) => (
-                <a
+                <Link
                   key={category}
-                  href={`#${category.toLowerCase()}`}
+                  to={`/category/${category.toLowerCase()}`}
                   className="block text-gray-300 hover:text-red-600 transition-colors font-medium px-4"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   {category}
-                </a>
+                </Link>
               ))}
               <div className="px-4 pt-4">
                 <div className="relative">
