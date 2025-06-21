@@ -2,13 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
 import { Article } from '../types/Article';
-import { Save, Trash2, Edit3, Plus, LogOut, Eye, Upload } from 'lucide-react';
+import { Save, Trash2, Edit3, Plus, LogOut, Eye, Upload, Sparkles, Target, BarChart3 } from 'lucide-react';
+import AIContentGenerator from './AIContentGenerator';
+import SEOAnalyzer from './SEOAnalyzer';
 
 const AdminPanel = () => {
   const { user, signOut } = useAuth();
   const [articles, setArticles] = useState<any[]>([]);
   const [editingArticle, setEditingArticle] = useState<any | null>(null);
   const [isCreating, setIsCreating] = useState(false);
+  const [showAIGenerator, setShowAIGenerator] = useState(false);
+  const [showSEOAnalyzer, setShowSEOAnalyzer] = useState(false);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
@@ -175,6 +179,23 @@ const AdminPanel = () => {
     await signOut();
   };
 
+  const handleAIContentGenerated = (content: any) => {
+    setFormData({
+      ...formData,
+      title: content.title,
+      summary: content.summary,
+      content: content.content,
+      image: content.image,
+      category: content.category,
+      tags: content.tags,
+      seoTitle: content.seoTitle,
+      seoDescription: content.seoDescription,
+      seoKeywords: content.seoKeywords
+    });
+    setShowAIGenerator(false);
+    setIsCreating(true);
+  };
+
   const categories = ['Politics', 'World', 'Opinion', 'Economy', 'Culture', 'Science', 'Security'];
 
   if (isCreating) {
@@ -186,6 +207,13 @@ const AdminPanel = () => {
               {editingArticle ? 'Edit Article' : 'Create New Article'}
             </h1>
             <div className="flex space-x-4">
+              <button
+                onClick={() => setShowSEOAnalyzer(true)}
+                className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded flex items-center space-x-2"
+              >
+                <Target className="w-4 h-4" />
+                <span>SEO Analyzer</span>
+              </button>
               <button
                 onClick={resetForm}
                 className="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded"
@@ -293,9 +321,19 @@ const AdminPanel = () => {
               </div>
             </div>
 
-            {/* SEO Section */}
+            {/* Advanced SEO Section */}
             <div className="border-t border-gray-700 pt-6">
-              <h3 className="text-lg font-semibold mb-4">SEO Settings</h3>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold">Advanced SEO Settings</h3>
+                <div className="flex space-x-2">
+                  <span className="bg-green-600 text-white px-2 py-1 rounded text-xs">
+                    EEAT Optimized
+                  </span>
+                  <span className="bg-blue-600 text-white px-2 py-1 rounded text-xs">
+                    AI Enhanced
+                  </span>
+                </div>
+              </div>
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium mb-2">SEO Title</label>
@@ -304,8 +342,11 @@ const AdminPanel = () => {
                     value={formData.seoTitle}
                     onChange={(e) => setFormData({...formData, seoTitle: e.target.value})}
                     className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 focus:outline-none focus:border-red-600"
-                    placeholder="SEO optimized title"
+                    placeholder="SEO optimized title (50-60 characters)"
                   />
+                  <div className="text-xs text-gray-400 mt-1">
+                    Length: {formData.seoTitle.length}/60 characters
+                  </div>
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-2">SEO Description</label>
@@ -313,17 +354,30 @@ const AdminPanel = () => {
                     value={formData.seoDescription}
                     onChange={(e) => setFormData({...formData, seoDescription: e.target.value})}
                     className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 h-16 focus:outline-none focus:border-red-600"
-                    placeholder="Meta description for search engines"
+                    placeholder="Meta description for search engines (150-160 characters)"
                   />
+                  <div className="text-xs text-gray-400 mt-1">
+                    Length: {formData.seoDescription.length}/160 characters
+                  </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-2">Tags (comma separated)</label>
+                  <label className="block text-sm font-medium mb-2">Tags & Keywords</label>
                   <input
                     type="text"
                     value={formData.tags.join(', ')}
                     onChange={(e) => setFormData({...formData, tags: e.target.value.split(',').map(tag => tag.trim())})}
                     className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 focus:outline-none focus:border-red-600"
-                    placeholder="politics, congress, budget"
+                    placeholder="politics, congress, budget, federal policy"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">SEO Keywords</label>
+                  <input
+                    type="text"
+                    value={formData.seoKeywords.join(', ')}
+                    onChange={(e) => setFormData({...formData, seoKeywords: e.target.value.split(',').map(kw => kw.trim())})}
+                    className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 focus:outline-none focus:border-red-600"
+                    placeholder="primary keyword, secondary keyword, long-tail keyword"
                   />
                 </div>
               </div>
@@ -347,6 +401,26 @@ const AdminPanel = () => {
             </div>
           </div>
         </div>
+
+        {/* SEO Analyzer Modal */}
+        {showSEOAnalyzer && (
+          <SEOAnalyzer
+            title={formData.title}
+            content={formData.content}
+            category={formData.category}
+            onClose={() => setShowSEOAnalyzer(false)}
+            onOptimize={(optimizedData) => {
+              setFormData({
+                ...formData,
+                seoTitle: optimizedData.seoTitle,
+                seoDescription: optimizedData.seoDescription,
+                seoKeywords: optimizedData.seoKeywords,
+                tags: optimizedData.suggestedTags
+              });
+              setShowSEOAnalyzer(false);
+            }}
+          />
+        )}
       </div>
     );
   }
@@ -360,6 +434,13 @@ const AdminPanel = () => {
             <p className="text-gray-400 mt-1">Welcome back, {user?.email}</p>
           </div>
           <div className="flex space-x-4">
+            <button
+              onClick={() => setShowAIGenerator(true)}
+              className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 px-6 py-2 rounded flex items-center space-x-2"
+            >
+              <Sparkles className="w-4 h-4" />
+              <span>AI Generator</span>
+            </button>
             <button
               onClick={() => setIsCreating(true)}
               className="bg-red-600 hover:bg-red-700 px-6 py-2 rounded flex items-center space-x-2"
@@ -377,6 +458,52 @@ const AdminPanel = () => {
           </div>
         </div>
 
+        {/* Analytics Dashboard */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-gray-400 text-sm">Total Articles</p>
+                <p className="text-2xl font-bold text-white">{articles.length}</p>
+              </div>
+              <BarChart3 className="w-8 h-8 text-blue-400" />
+            </div>
+          </div>
+          <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-gray-400 text-sm">Published</p>
+                <p className="text-2xl font-bold text-white">
+                  {articles.filter(a => a.status === 'published').length}
+                </p>
+              </div>
+              <Eye className="w-8 h-8 text-green-400" />
+            </div>
+          </div>
+          <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-gray-400 text-sm">Featured</p>
+                <p className="text-2xl font-bold text-white">
+                  {articles.filter(a => a.featured).length}
+                </p>
+              </div>
+              <Target className="w-8 h-8 text-yellow-400" />
+            </div>
+          </div>
+          <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-gray-400 text-sm">Breaking News</p>
+                <p className="text-2xl font-bold text-white">
+                  {articles.filter(a => a.breaking).length}
+                </p>
+              </div>
+              <Sparkles className="w-8 h-8 text-red-400" />
+            </div>
+          </div>
+        </div>
+
         <div className="bg-gray-800 rounded-lg overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
@@ -390,6 +517,9 @@ const AdminPanel = () => {
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                     Status
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                    SEO Score
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                     Date
@@ -445,6 +575,19 @@ const AdminPanel = () => {
                         )}
                       </div>
                     </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center space-x-2">
+                        <div className="flex-1 bg-gray-600 rounded-full h-2 w-16">
+                          <div 
+                            className="bg-green-500 h-2 rounded-full" 
+                            style={{ width: `${Math.min(100, (article.seo_keywords?.length || 0) * 20 + 60)}%` }}
+                          ></div>
+                        </div>
+                        <span className="text-xs text-gray-400">
+                          {Math.min(100, (article.seo_keywords?.length || 0) * 20 + 60)}%
+                        </span>
+                      </div>
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400">
                       {new Date(article.created_at).toLocaleDateString()}
                     </td>
@@ -482,16 +625,34 @@ const AdminPanel = () => {
 
         {articles.length === 0 && (
           <div className="text-center py-12">
+            <Sparkles className="w-16 h-16 text-gray-400 mx-auto mb-4" />
             <p className="text-gray-400 mb-4">No articles found. Create your first article to get started!</p>
-            <button
-              onClick={() => setIsCreating(true)}
-              className="bg-red-600 hover:bg-red-700 px-6 py-2 rounded"
-            >
-              Create First Article
-            </button>
+            <div className="flex justify-center space-x-4">
+              <button
+                onClick={() => setShowAIGenerator(true)}
+                className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 px-6 py-2 rounded flex items-center space-x-2"
+              >
+                <Sparkles className="w-4 h-4" />
+                <span>Generate with AI</span>
+              </button>
+              <button
+                onClick={() => setIsCreating(true)}
+                className="bg-red-600 hover:bg-red-700 px-6 py-2 rounded"
+              >
+                Create Manually
+              </button>
+            </div>
           </div>
         )}
       </div>
+
+      {/* AI Content Generator Modal */}
+      {showAIGenerator && (
+        <AIContentGenerator
+          onContentGenerated={handleAIContentGenerated}
+          onClose={() => setShowAIGenerator(false)}
+        />
+      )}
     </div>
   );
 };

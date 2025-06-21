@@ -1,0 +1,234 @@
+import { GoogleGenerativeAI } from '@google/generative-ai';
+
+const GEMINI_API_KEY = 'AIzaSyBE-SkmQO-yqDyn51HaenX8Xw3BCLjCcM0';
+
+class GeminiService {
+  private genAI: GoogleGenerativeAI;
+  private model: any;
+
+  constructor() {
+    this.genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
+    this.model = this.genAI.getGenerativeModel({ model: 'gemini-pro' });
+  }
+
+  async generateArticle(topic: string, category: string, keywords: string[]): Promise<{
+    title: string;
+    summary: string;
+    content: string;
+    seoTitle: string;
+    seoDescription: string;
+    seoKeywords: string[];
+    suggestedTags: string[];
+    imageQuery: string;
+  }> {
+    const prompt = `
+You are an expert political journalist and SEO specialist writing for Federals.live, an authoritative news platform. 
+
+Create a comprehensive, EEAT-optimized article about: "${topic}"
+Category: ${category}
+Target Keywords: ${keywords.join(', ')}
+
+Requirements:
+1. EXPERTISE: Demonstrate deep knowledge of political processes, institutions, and current events
+2. AUTHORITATIVENESS: Use credible sources, official statements, and expert analysis
+3. TRUSTWORTHINESS: Present balanced, fact-based reporting with proper attribution
+4. SEO OPTIMIZATION: Include target keywords naturally throughout
+
+Structure your response as JSON with these fields:
+{
+  "title": "Compelling, SEO-optimized headline (50-60 chars)",
+  "summary": "Engaging summary for social sharing (150-160 chars)",
+  "content": "Full article in Markdown format (1500-2500 words)",
+  "seoTitle": "SEO-optimized title with primary keyword",
+  "seoDescription": "Meta description with keywords (150-160 chars)",
+  "seoKeywords": ["array", "of", "relevant", "keywords"],
+  "suggestedTags": ["relevant", "article", "tags"],
+  "imageQuery": "Descriptive query for finding relevant stock photos"
+}
+
+Content Guidelines:
+- Start with a compelling lead paragraph
+- Use H2 and H3 headings for structure
+- Include quotes from officials or experts (you can create realistic attributions)
+- Add bullet points for key information
+- Include background context and analysis
+- End with implications and what's next
+- Maintain journalistic objectivity
+- Use active voice and clear, professional language
+- Naturally incorporate keywords without stuffing
+
+Focus on current political developments, policy implications, and institutional processes relevant to the topic.
+`;
+
+    try {
+      const result = await this.model.generateContent(prompt);
+      const response = await result.response;
+      const text = response.text();
+      
+      // Extract JSON from the response
+      const jsonMatch = text.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) {
+        throw new Error('Invalid response format from AI');
+      }
+      
+      return JSON.parse(jsonMatch[0]);
+    } catch (error) {
+      console.error('Error generating article:', error);
+      throw new Error('Failed to generate article content');
+    }
+  }
+
+  async optimizeSEO(title: string, content: string, category: string): Promise<{
+    seoTitle: string;
+    seoDescription: string;
+    seoKeywords: string[];
+    suggestedTags: string[];
+    readabilityScore: number;
+    suggestions: string[];
+  }> {
+    const prompt = `
+Analyze this article for SEO optimization:
+
+Title: ${title}
+Category: ${category}
+Content: ${content.substring(0, 2000)}...
+
+Provide SEO analysis and recommendations as JSON:
+{
+  "seoTitle": "Optimized title with primary keyword (50-60 chars)",
+  "seoDescription": "Compelling meta description (150-160 chars)",
+  "seoKeywords": ["primary", "secondary", "long-tail", "keywords"],
+  "suggestedTags": ["relevant", "content", "tags"],
+  "readabilityScore": 85,
+  "suggestions": [
+    "Add more internal links",
+    "Include more specific statistics",
+    "Optimize heading structure"
+  ]
+}
+
+Focus on:
+- Political and news-related keywords
+- Search intent optimization
+- Competitive keyword analysis
+- EEAT factors for news content
+- Local and trending political topics
+`;
+
+    try {
+      const result = await this.model.generateContent(prompt);
+      const response = await result.response;
+      const text = response.text();
+      
+      const jsonMatch = text.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) {
+        throw new Error('Invalid response format from AI');
+      }
+      
+      return JSON.parse(jsonMatch[0]);
+    } catch (error) {
+      console.error('Error optimizing SEO:', error);
+      throw new Error('Failed to optimize SEO');
+    }
+  }
+
+  async researchTopic(topic: string): Promise<{
+    keyPoints: string[];
+    relatedTopics: string[];
+    expertSources: string[];
+    trendingAngles: string[];
+    factCheckPoints: string[];
+  }> {
+    const prompt = `
+Research the political topic: "${topic}"
+
+Provide comprehensive research data as JSON:
+{
+  "keyPoints": [
+    "Main policy implications",
+    "Key stakeholders involved",
+    "Historical context"
+  ],
+  "relatedTopics": [
+    "Connected political issues",
+    "Related legislation",
+    "Similar past events"
+  ],
+  "expertSources": [
+    "Government officials to quote",
+    "Policy experts",
+    "Academic researchers"
+  ],
+  "trendingAngles": [
+    "Current debate points",
+    "Public opinion aspects",
+    "Media coverage angles"
+  ],
+  "factCheckPoints": [
+    "Claims to verify",
+    "Statistics to confirm",
+    "Official statements to reference"
+  ]
+}
+
+Focus on current political developments, institutional processes, and policy implications.
+`;
+
+    try {
+      const result = await this.model.generateContent(prompt);
+      const response = await result.response;
+      const text = response.text();
+      
+      const jsonMatch = text.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) {
+        throw new Error('Invalid response format from AI');
+      }
+      
+      return JSON.parse(jsonMatch[0]);
+    } catch (error) {
+      console.error('Error researching topic:', error);
+      throw new Error('Failed to research topic');
+    }
+  }
+
+  async generateImageSuggestions(topic: string, category: string): Promise<string[]> {
+    const prompt = `
+Suggest 5 professional stock photo search queries for a political news article about: "${topic}"
+Category: ${category}
+
+Return as JSON array of search terms that would find appropriate, professional images:
+["search query 1", "search query 2", "search query 3", "search query 4", "search query 5"]
+
+Focus on:
+- Professional political imagery
+- Government buildings and institutions
+- Official meetings and ceremonies
+- Abstract concepts related to politics
+- Avoid partisan imagery
+`;
+
+    try {
+      const result = await this.model.generateContent(prompt);
+      const response = await result.response;
+      const text = response.text();
+      
+      const jsonMatch = text.match(/\[[\s\S]*\]/);
+      if (!jsonMatch) {
+        throw new Error('Invalid response format from AI');
+      }
+      
+      return JSON.parse(jsonMatch[0]);
+    } catch (error) {
+      console.error('Error generating image suggestions:', error);
+      return [
+        'government building politics',
+        'political meeting conference',
+        'capitol building washington',
+        'political debate discussion',
+        'federal government official'
+      ];
+    }
+  }
+}
+
+export const geminiService = new GeminiService();
