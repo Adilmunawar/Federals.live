@@ -26,51 +26,90 @@ const ArticleView = () => {
         setError(null);
         console.log('Fetching article with slug:', slug);
         
+        // Add a small delay to prevent rapid state changes
         const fetchedArticle = await getArticleBySlug(slug);
         
-        if (fetchedArticle) {
+        // Ensure we have a valid article before setting state
+        if (fetchedArticle && fetchedArticle.title && fetchedArticle.content) {
           setArticle(fetchedArticle);
-          console.log('Article loaded successfully:', fetchedArticle);
+          console.log('Article loaded successfully:', fetchedArticle.title);
         } else {
-          setError('Article not found');
+          setError('Article not found or incomplete');
           console.log('Article not found for slug:', slug);
         }
       } catch (err) {
         console.error('Error loading article:', err);
         setError('Failed to load article');
       } finally {
-        setLoading(false);
+        // Ensure loading is set to false after a minimum delay
+        setTimeout(() => {
+          setLoading(false);
+        }, 100);
       }
     };
 
     fetchArticle();
   }, [slug, getArticleBySlug]);
 
+  // Show loading state
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto mb-4"></div>
-          <p className="text-gray-400">Loading article...</p>
+      <div className="min-h-screen bg-gray-900 text-white">
+        {/* Header */}
+        <header className="bg-gray-800 border-b border-gray-700">
+          <div className="max-w-4xl mx-auto px-4 py-4">
+            <Link
+              to="/"
+              className="flex items-center space-x-2 text-gray-400 hover:text-white transition-colors"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span>Back to Home</span>
+            </Link>
+          </div>
+        </header>
+
+        {/* Loading Content */}
+        <div className="max-w-4xl mx-auto px-4 py-8">
+          <div className="text-center py-16">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto mb-4"></div>
+            <p className="text-gray-400">Loading article...</p>
+          </div>
         </div>
       </div>
     );
   }
 
+  // Show error or not found state
   if (error || !article) {
     return (
-      <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-4xl font-bold mb-4">Article Not Found</h1>
-          <p className="text-gray-400 mb-8">
-            {error || "The article you're looking for doesn't exist."}
-          </p>
-          <Link
-            to="/"
-            className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors"
-          >
-            Return Home
-          </Link>
+      <div className="min-h-screen bg-gray-900 text-white">
+        {/* Header */}
+        <header className="bg-gray-800 border-b border-gray-700">
+          <div className="max-w-4xl mx-auto px-4 py-4">
+            <Link
+              to="/"
+              className="flex items-center space-x-2 text-gray-400 hover:text-white transition-colors"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span>Back to Home</span>
+            </Link>
+          </div>
+        </header>
+
+        {/* Error Content */}
+        <div className="max-w-4xl mx-auto px-4 py-8">
+          <div className="text-center py-16">
+            <h1 className="text-4xl font-bold mb-4">Article Not Found</h1>
+            <p className="text-gray-400 mb-8">
+              {error || "The article you're looking for doesn't exist."}
+            </p>
+            <Link
+              to="/"
+              className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors"
+            >
+              Return Home
+            </Link>
+          </div>
         </div>
       </div>
     );
@@ -175,18 +214,21 @@ const ArticleView = () => {
               <button
                 onClick={() => handleShare('twitter')}
                 className="text-gray-400 hover:text-blue-400 transition-colors"
+                aria-label="Share on Twitter"
               >
                 <Twitter className="w-4 h-4" />
               </button>
               <button
                 onClick={() => handleShare('facebook')}
                 className="text-gray-400 hover:text-blue-600 transition-colors"
+                aria-label="Share on Facebook"
               >
                 <Facebook className="w-4 h-4" />
               </button>
               <button
                 onClick={() => handleShare('linkedin')}
                 className="text-gray-400 hover:text-blue-500 transition-colors"
+                aria-label="Share on LinkedIn"
               >
                 <Linkedin className="w-4 h-4" />
               </button>
@@ -255,6 +297,19 @@ const ArticleView = () => {
             </div>
           </div>
         )}
+
+        {/* Related Articles Section */}
+        <div className="mt-12 pt-8 border-t border-gray-700">
+          <h3 className="text-xl font-semibold text-white mb-4">Continue Reading</h3>
+          <div className="flex justify-center">
+            <Link
+              to="/"
+              className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors"
+            >
+              View More Articles
+            </Link>
+          </div>
+        </div>
       </article>
     </div>
   );

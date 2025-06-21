@@ -34,7 +34,15 @@ If no agreement is reached by the deadline, federal agencies will begin implemen
 
 Leadership from both chambers will continue negotiations through the weekend, with a potential vote scheduled for early next week. The American people are watching closely as their elected representatives work to fulfill their most basic constitutional duty: funding the government.
 
-This situation highlights the ongoing challenges in American governance and the need for bipartisan cooperation in addressing the nation's fiscal responsibilities.`,
+This situation highlights the ongoing challenges in American governance and the need for bipartisan cooperation in addressing the nation's fiscal responsibilities.
+
+## Expert Analysis
+
+Political analysts suggest that this budget standoff reflects deeper ideological divisions within Congress. The outcome will likely set the tone for future legislative battles and could impact the upcoming election cycle.
+
+## Public Response
+
+Recent polling indicates that Americans are increasingly frustrated with congressional gridlock, with approval ratings for Congress remaining at historic lows. Citizens are calling for pragmatic solutions that prioritize essential government services.`,
     image: "https://images.pexels.com/photos/5692251/pexels-photo-5692251.jpeg?auto=compress&cs=tinysrgb&w=1200",
     category: "Politics",
     author: "Editorial Team",
@@ -71,7 +79,24 @@ The discussions emphasize the need for multilateral approaches to modern securit
 
 ## Expected Outcomes
 
-Participants aim to establish new frameworks for information sharing and coordinated response mechanisms to enhance global security cooperation.`,
+Participants aim to establish new frameworks for information sharing and coordinated response mechanisms to enhance global security cooperation.
+
+## Regional Focus Areas
+
+Special attention is being paid to several key regions:
+
+### Middle East Stability
+Ongoing conflicts and their broader implications for regional security continue to be a primary concern for international leaders.
+
+### Asia-Pacific Tensions
+Rising geopolitical tensions in the Asia-Pacific region require careful diplomatic management and multilateral engagement.
+
+### European Security Architecture
+The evolving security landscape in Europe necessitates updated frameworks for cooperation and collective defense.
+
+## Technology and Security
+
+The summit also addresses the intersection of emerging technologies and security challenges, including artificial intelligence, quantum computing, and space-based assets.`,
     image: "https://images.pexels.com/photos/7621047/pexels-photo-7621047.jpeg?auto=compress&cs=tinysrgb&w=1200",
     category: "World",
     author: "International Desk",
@@ -112,7 +137,22 @@ These mixed signals present challenges for policymakers as they balance growth o
 
 ## Looking Ahead
 
-Economists emphasize the importance of monitoring these trends closely as they will influence policy decisions in the coming months.`,
+Economists emphasize the importance of monitoring these trends closely as they will influence policy decisions in the coming months.
+
+## Sector Analysis
+
+### Technology Sector
+The technology sector continues to show resilience, with strong earnings reports from major companies offsetting concerns about regulatory pressures.
+
+### Energy Markets
+Energy prices remain volatile, influenced by geopolitical tensions and supply chain disruptions affecting global markets.
+
+### Housing Market
+The housing market shows signs of cooling, with rising interest rates affecting both buyers and sellers in major metropolitan areas.
+
+## Federal Reserve Considerations
+
+The Federal Reserve faces difficult decisions as it balances the need to control inflation while supporting economic growth and employment.`,
     image: "https://images.pexels.com/photos/259027/pexels-photo-259027.jpeg?auto=compress&cs=tinysrgb&w=1200",
     category: "Economy",
     author: "Economics Team",
@@ -212,6 +252,14 @@ export function useArticles() {
     try {
       console.log('Fetching article by slug:', slug);
       
+      // First, try to find in current articles array (fastest)
+      const existingArticle = articles.find(a => a.slug === slug);
+      if (existingArticle) {
+        console.log('Found article in current articles:', existingArticle.title);
+        return existingArticle;
+      }
+      
+      // If not found in current articles and Supabase is connected, try database
       if (isSupabaseConnected) {
         const { data, error } = await supabase
           .from('articles')
@@ -220,11 +268,8 @@ export function useArticles() {
           .eq('status', 'published')
           .single();
 
-        if (error) {
-          console.error('Error fetching article by slug:', error);
-          // Fall back to local articles
-        } else if (data) {
-          console.log('Found article in Supabase:', data);
+        if (!error && data) {
+          console.log('Found article in Supabase:', data.title);
           return {
             id: data.id,
             title: data.title,
@@ -246,17 +291,10 @@ export function useArticles() {
         }
       }
       
-      // Search in current articles (including fallback)
-      const article = articles.find(a => a.slug === slug);
-      if (article) {
-        console.log('Found article in local data:', article);
-        return article;
-      }
-      
-      // Search in fallback articles directly
+      // Finally, search in fallback articles
       const fallbackArticle = FALLBACK_ARTICLES.find(a => a.slug === slug);
       if (fallbackArticle) {
-        console.log('Found article in fallback data:', fallbackArticle);
+        console.log('Found article in fallback data:', fallbackArticle.title);
         return fallbackArticle;
       }
       
@@ -264,6 +302,14 @@ export function useArticles() {
       return null;
     } catch (err) {
       console.error('Error fetching article by slug:', err);
+      
+      // As a last resort, try fallback articles
+      const fallbackArticle = FALLBACK_ARTICLES.find(a => a.slug === slug);
+      if (fallbackArticle) {
+        console.log('Found article in fallback data after error:', fallbackArticle.title);
+        return fallbackArticle;
+      }
+      
       return null;
     }
   };
