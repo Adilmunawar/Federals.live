@@ -2,9 +2,10 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { useArticles } from '../hooks/useArticles';
 import NewsCard from './NewsCard';
+import { AlertCircle, Database, Wifi } from 'lucide-react';
 
 const MainContent = () => {
-  const { articles, loading, error } = useArticles();
+  const { articles, loading, error, isSupabaseConnected } = useArticles();
 
   if (loading) {
     return (
@@ -25,23 +26,41 @@ const MainContent = () => {
     );
   }
 
-  if (error) {
-    return (
-      <main className="lg:col-span-2">
-        <div className="mb-8">
-          <h2 className="text-3xl font-bold text-white mb-6">Latest News</h2>
-          <div className="bg-red-900 border border-red-700 text-red-300 p-4 rounded">
-            Error loading articles: {error}
-          </div>
-        </div>
-      </main>
-    );
-  }
-
   return (
     <main className="lg:col-span-2">
       <div className="mb-8">
-        <h2 className="text-3xl font-bold text-white mb-6">Latest News</h2>
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-3xl font-bold text-white">Latest News</h2>
+          
+          {/* Connection Status Indicator */}
+          <div className="flex items-center space-x-2">
+            {isSupabaseConnected ? (
+              <div className="flex items-center space-x-2 text-green-400 text-sm">
+                <Database className="w-4 h-4" />
+                <span>Live Database</span>
+              </div>
+            ) : (
+              <div className="flex items-center space-x-2 text-yellow-400 text-sm">
+                <Wifi className="w-4 h-4" />
+                <span>Demo Mode</span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Error/Demo Mode Notice */}
+        {error && !isSupabaseConnected && (
+          <div className="bg-yellow-900 border border-yellow-700 text-yellow-300 p-4 rounded mb-6">
+            <div className="flex items-center space-x-2">
+              <AlertCircle className="w-5 h-5" />
+              <div>
+                <p className="font-semibold">Demo Mode Active</p>
+                <p className="text-sm">Connect to Supabase to see live articles. Currently showing demo content.</p>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="grid gap-6">
           {articles.map((article) => (
             <Link key={article.id} to={`/article/${article.slug}`}>
@@ -51,9 +70,9 @@ const MainContent = () => {
         </div>
       </div>
 
-      {articles.length === 0 && (
+      {articles.length === 0 && !loading && (
         <div className="text-center py-12">
-          <p className="text-gray-400 mb-4">No articles published yet.</p>
+          <p className="text-gray-400 mb-4">No articles available.</p>
           <Link
             to="/admin"
             className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors"

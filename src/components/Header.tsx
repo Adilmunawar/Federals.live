@@ -33,8 +33,12 @@ const Header = () => {
               className="w-8 h-8 object-contain"
               onError={(e) => {
                 // Fallback to original design if logo fails to load
-                e.currentTarget.style.display = 'none';
-                e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                const target = e.currentTarget;
+                target.style.display = 'none';
+                const fallback = target.nextElementSibling as HTMLElement;
+                if (fallback) {
+                  fallback.classList.remove('hidden');
+                }
               }}
             />
             <div className="w-8 h-8 bg-red-600 rounded flex items-center justify-center hidden">

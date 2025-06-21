@@ -20,7 +20,9 @@ export default defineConfig({
           ai: ['@google/generative-ai']
         }
       }
-    }
+    },
+    assetsDir: 'assets',
+    emptyOutDir: true
   },
   server: {
     port: 5173,
@@ -29,5 +31,6 @@ export default defineConfig({
   preview: {
     port: 4173,
     host: true
-  }
+  },
+  base: '/'
 });

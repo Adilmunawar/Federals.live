@@ -1,13 +1,40 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+// Environment variables with fallbacks for development
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
 
+// Check if we're in development and provide helpful error messages
 if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase environment variables');
+  if (import.meta.env.DEV) {
+    console.warn('⚠️ Supabase environment variables not found. Please check your .env file.');
+    console.warn('Required variables: VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY');
+  }
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Create a mock client for development if env vars are missing
+const createMockClient = () => ({
+  from: () => ({
+    select: () => Promise.resolve({ data: [], error: null }),
+    insert: () => Promise.resolve({ data: null, error: null }),
+    update: () => Promise.resolve({ data: null, error: null }),
+    delete: () => Promise.resolve({ data: null, error: null }),
+    eq: function() { return this; },
+    order: function() { return this; },
+    single: () => Promise.resolve({ data: null, error: new Error('No Supabase connection') })
+  }),
+  auth: {
+    getSession: () => Promise.resolve({ data: { session: null }, error: null }),
+    onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
+    signInWithPassword: () => Promise.resolve({ data: null, error: new Error('No Supabase connection') }),
+    signUp: () => Promise.resolve({ data: null, error: new Error('No Supabase connection') }),
+    signOut: () => Promise.resolve({ error: null })
+  }
+});
+
+export const supabase = (supabaseUrl && supabaseAnonKey) 
+  ? createClient(supabaseUrl, supabaseAnonKey)
+  : createMockClient();
 
 // Database types
 export interface Database {
