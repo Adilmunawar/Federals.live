@@ -45,6 +45,19 @@ const AIContentGenerator: React.FC<AIContentGeneratorProps> = ({ onContentGenera
     { value: 'long', label: 'Long (2500-3500 words)' }
   ];
 
+  // Helper function to extract string value from object or return the value as-is
+  const extractStringValue = (item: any): string => {
+    if (typeof item === 'string') {
+      return item;
+    }
+    if (typeof item === 'object' && item !== null) {
+      // If it's an object, get the first value
+      const values = Object.values(item);
+      return values.length > 0 ? String(values[0]) : '';
+    }
+    return String(item);
+  };
+
   const handleResearch = async () => {
     if (!formData.topic.trim()) {
       alert('Please enter a topic to research');
@@ -229,10 +242,10 @@ const AIContentGenerator: React.FC<AIContentGeneratorProps> = ({ onContentGenera
           <div className="bg-gray-700 rounded-lg p-4">
             <h3 className="font-semibold text-white mb-3">Key Points</h3>
             <ul className="space-y-2">
-              {research.keyPoints.map((point: string, index: number) => (
+              {(research.keyPoints || []).map((point: any, index: number) => (
                 <li key={index} className="text-gray-300 text-sm flex items-start space-x-2">
                   <CheckCircle className="w-4 h-4 text-green-400 mt-0.5 flex-shrink-0" />
-                  <span>{point}</span>
+                  <span>{extractStringValue(point)}</span>
                 </li>
               ))}
             </ul>
@@ -241,10 +254,10 @@ const AIContentGenerator: React.FC<AIContentGeneratorProps> = ({ onContentGenera
           <div className="bg-gray-700 rounded-lg p-4">
             <h3 className="font-semibold text-white mb-3">Expert Sources</h3>
             <ul className="space-y-2">
-              {research.expertSources.map((source: string, index: number) => (
+              {(research.expertSources || []).map((source: any, index: number) => (
                 <li key={index} className="text-gray-300 text-sm flex items-start space-x-2">
                   <Target className="w-4 h-4 text-blue-400 mt-0.5 flex-shrink-0" />
-                  <span>{source}</span>
+                  <span>{extractStringValue(source)}</span>
                 </li>
               ))}
             </ul>
@@ -253,10 +266,10 @@ const AIContentGenerator: React.FC<AIContentGeneratorProps> = ({ onContentGenera
           <div className="bg-gray-700 rounded-lg p-4">
             <h3 className="font-semibold text-white mb-3">Trending Angles</h3>
             <ul className="space-y-2">
-              {research.trendingAngles.map((angle: string, index: number) => (
+              {(research.trendingAngles || []).map((angle: any, index: number) => (
                 <li key={index} className="text-gray-300 text-sm flex items-start space-x-2">
                   <Sparkles className="w-4 h-4 text-yellow-400 mt-0.5 flex-shrink-0" />
-                  <span>{angle}</span>
+                  <span>{extractStringValue(angle)}</span>
                 </li>
               ))}
             </ul>
@@ -265,10 +278,10 @@ const AIContentGenerator: React.FC<AIContentGeneratorProps> = ({ onContentGenera
           <div className="bg-gray-700 rounded-lg p-4">
             <h3 className="font-semibold text-white mb-3">Fact Check Points</h3>
             <ul className="space-y-2">
-              {research.factCheckPoints.map((point: string, index: number) => (
+              {(research.factCheckPoints || []).map((point: any, index: number) => (
                 <li key={index} className="text-gray-300 text-sm flex items-start space-x-2">
                   <AlertCircle className="w-4 h-4 text-orange-400 mt-0.5 flex-shrink-0" />
-                  <span>{point}</span>
+                  <span>{extractStringValue(point)}</span>
                 </li>
               ))}
             </ul>
