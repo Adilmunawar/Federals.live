@@ -16,12 +16,11 @@ const HeroSection = () => {
   }, [featuredArticles.length]);
   const nextSlide = () => {
     setCurrentSlide((prev) => (prev + 1) % featuredArticles.length);
-  };
-
+  }; 
+  const nextsSLi
   const prevSlide = () => {
     setCurrentSlide((prev) => (prev - 1 + featuredArticles.length) % featuredArticles.length);
   };
-
   if (featuredArticles.length === 0) {
     return (
       <section className="relative h-[70vh] overflow-hidden bg-gray-800 flex items-center justify-center">
