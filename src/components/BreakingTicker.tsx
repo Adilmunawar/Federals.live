@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { AlertCircle } from 'lucide-react';
-
 const BreakingTicker = () => {
   const [currentNews, setCurrentNews] = useState(0);
-  
   const breakingNews = [
     "Senate passes landmark climate legislation with bipartisan support",
     "Federal Reserve announces interest rate decision amid inflation concerns",
@@ -11,14 +9,12 @@ const BreakingTicker = () => {
     "Economic indicators show mixed signals for Q4 growth",
     "Supreme Court to review constitutional challenge next term"
   ];
-
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentNews((prev) => (prev + 1) % breakingNews.length);
     }, 5000);
     return () => clearInterval(interval);
   }, []);
-
   return (
     <div className="bg-red-600 text-white py-2 mt-16 overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 flex items-center">
