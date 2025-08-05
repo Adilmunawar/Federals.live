@@ -14,7 +14,6 @@ interface SEOAnalyzerProps {
     suggestedTags: string[];
   }) => void;
 }
-
 const SEOAnalyzer: React.FC<SEOAnalyzerProps> = ({ 
   title, 
   content, 
@@ -25,13 +24,11 @@ const SEOAnalyzer: React.FC<SEOAnalyzerProps> = ({
   const [analysis, setAnalysis] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
-
   useEffect(() => {
     if (title && content) {
       analyzeSEO();
     }
   }, [title, content, category]);
-
   const analyzeSEO = async () => {
     setLoading(true);
     try {
@@ -125,9 +122,7 @@ const SEOAnalyzer: React.FC<SEOAnalyzerProps> = ({
       </div>
     );
   }
-
   const seoScore = getSEOScore();
-
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
       <div className="bg-gray-800 rounded-lg max-w-6xl w-full max-h-[90vh] overflow-y-auto">
@@ -150,7 +145,6 @@ const SEOAnalyzer: React.FC<SEOAnalyzerProps> = ({
               ✕
             </button>
           </div>
-
           {/* Tab Navigation */}
           <div className="flex space-x-1 mb-6 bg-gray-700 rounded-lg p-1">
             {[
