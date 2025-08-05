@@ -5,7 +5,6 @@ import { Article } from '../types/Article';
 import { Save, Trash2, Edit3, Plus, LogOut, Eye, Upload, Sparkles, Target, BarChart3 } from 'lucide-react';
 import AIContentGenerator from './AIContentGenerator';
 import SEOAnalyzer from './SEOAnalyzer';
-
 const AdminPanel = () => {
   const { user, signOut } = useAuth();
   const [articles, setArticles] = useState<any[]>([]);
@@ -29,25 +28,21 @@ const AdminPanel = () => {
     seoKeywords: [] as string[],
     status: 'published'
   });
-
   useEffect(() => {
     loadArticles();
   }, []);
-
   const loadArticles = async () => {
     try {
       const { data, error } = await supabase
         .from('articles')
         .select('*')
         .order('created_at', { ascending: false });
-
       if (error) throw error;
       setArticles(data || []);
     } catch (err) {
       console.error('Error loading articles:', err);
     }
   };
-
   const generateSlug = (title: string): string => {
     return title
       .toLowerCase()
@@ -56,25 +51,21 @@ const AdminPanel = () => {
       .replace(/-+/g, '-')
       .trim();
   };
-
   const calculateReadTime = (content: string): string => {
     const wordsPerMinute = 200;
     const wordCount = content.split(/\s+/).length;
     const minutes = Math.ceil(wordCount / wordsPerMinute);
     return `${minutes} min read`;
   };
-
   const handleSave = async () => {
     if (!formData.title || !formData.content) {
       alert('Title and content are required');
       return;
     }
-
     setLoading(true);
     try {
       const slug = generateSlug(formData.title);
       const readTime = calculateReadTime(formData.content);
-
       const articleData = {
         title: formData.title,
         summary: formData.summary,
@@ -92,22 +83,18 @@ const AdminPanel = () => {
         seo_keywords: formData.seoKeywords,
         status: formData.status,
       };
-
       if (editingArticle) {
         const { error } = await supabase
           .from('articles')
           .update(articleData)
           .eq('id', editingArticle.id);
-
         if (error) throw error;
       } else {
         const { error } = await supabase
           .from('articles')
           .insert([articleData]);
-
         if (error) throw error;
       }
-
       await loadArticles();
       resetForm();
     } catch (err) {
@@ -117,7 +104,6 @@ const AdminPanel = () => {
       setLoading(false);
     }
   };
-
   const handleEdit = (article: any) => {
     setEditingArticle(article);
     setFormData({
