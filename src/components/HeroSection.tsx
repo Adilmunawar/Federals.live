@@ -64,7 +64,6 @@ const HeroSection = () => {
           </div>
         ))}
       </div>
-
       <div className="relative z-10 h-full flex items-end">
         <div className="max-w-7xl mx-auto px-4 pb-16 w-full">
           <div className="max-w-3xl">
