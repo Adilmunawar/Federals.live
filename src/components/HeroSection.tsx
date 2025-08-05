@@ -2,12 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, Clock, User } from 'lucide-react';
 import { useArticles } from '../hooks/useArticles';
-
 const HeroSection = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const { getFeaturedArticles } = useArticles();
   const featuredArticles = getFeaturedArticles().slice(0, 3);
-
   useEffect(() => {
     if (featuredArticles.length > 1) {
       const interval = setInterval(() => {
@@ -16,7 +14,6 @@ const HeroSection = () => {
       return () => clearInterval(interval);
     }
   }, [featuredArticles.length]);
-
   const nextSlide = () => {
     setCurrentSlide((prev) => (prev + 1) % featuredArticles.length);
   };
