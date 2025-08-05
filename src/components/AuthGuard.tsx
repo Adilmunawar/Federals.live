@@ -1,14 +1,11 @@
 import React from 'react';
 import { useAuth } from '../hooks/useAuth';
 import LoginForm from './LoginForm';
-
 interface AuthGuardProps {
   children: React.ReactNode;
 }
-
 const AuthGuard: React.FC<AuthGuardProps> = ({ children }) => {
   const { user, loading } = useAuth();
-
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center">
@@ -19,12 +16,9 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ children }) => {
       </div>
     );
   }
-
   if (!user) {
     return <LoginForm />;
   }
-
   return <>{children}</>;
 };
-
 export default AuthGuard;
