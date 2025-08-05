@@ -1,10 +1,8 @@
 import React from 'react';
 import { Mail, Twitter, Facebook, Linkedin, Rss } from 'lucide-react';
 import { Link } from 'react-router-dom';
-
 const Footer = () => {
   const currentYear = new Date().getFullYear();
-
   const footerLinks = {
     About: [
       { name: 'About Us', href: '#' },
@@ -31,7 +29,6 @@ const Footer = () => {
       { name: 'Archives', href: '#' }
     ]
   };
-
   return (
     <footer className="bg-gray-900 border-t border-gray-800 mt-16">
       <div className="max-w-7xl mx-auto px-4 py-12">
@@ -111,7 +108,6 @@ const Footer = () => {
             </div>
           ))}
         </div>
-
         {/* Newsletter Signup */}
         <div className="border-t border-gray-800 pt-8 mb-8">
           <div className="md:flex md:items-center md:justify-between">
@@ -133,7 +129,6 @@ const Footer = () => {
             </div>
           </div>
         </div>
-
         {/* Bottom Bar */}
         <div className="border-t border-gray-800 pt-8">
           <div className="md:flex md:items-center md:justify-between">
