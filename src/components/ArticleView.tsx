@@ -5,14 +5,12 @@ import { Clock, User, Calendar, ArrowLeft, Share2, Twitter, Facebook, Linkedin }
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Article } from '../types/Article';
-
 const ArticleView = () => {
   const { slug } = useParams<{ slug: string }>();
   const { getArticleBySlug } = useArticles();
   const [article, setArticle] = useState<Article | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
   useEffect(() => {
     const fetchArticle = async () => {
       if (!slug) {
@@ -20,16 +18,11 @@ const ArticleView = () => {
         setLoading(false);
         return;
       }
-
       try {
         setLoading(true);
         setError(null);
         console.log('Fetching article with slug:', slug);
-        
-        // Add a small delay to prevent rapid state changes
         const fetchedArticle = await getArticleBySlug(slug);
-        
-        // Ensure we have a valid article before setting state
         if (fetchedArticle && fetchedArticle.title && fetchedArticle.content) {
           setArticle(fetchedArticle);
           console.log('Article loaded successfully:', fetchedArticle.title);
