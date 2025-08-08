@@ -4,7 +4,6 @@ import ContentGenerator from './components/ContentGenerator';
 import ArticlePreview from './components/ArticlePreview';
 import Header from './components/Header';
 import Footer from './components/Footer';
-
 function App() {
   return (
     <Router>
